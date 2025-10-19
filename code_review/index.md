@@ -76,10 +76,10 @@ These are the enhancements described in the review and completed in the capstone
 ---
 
 ## 📂 Related Links
-- [Back to Home / Self-Assessment](/index.md)
-- [Enhancement #1 — Software Design & Engineering](/artifacts/software_design/)
-- [Enhancement #2 — Algorithms & Data Structures](/artifacts/algorithms/)
-- [Enhancement #3 — Databases](/artifacts/databases/)
+- [Code Review Video](code_review/)
+- [Software Design & Engineering Enhancement](artifacts/software_design/)
+- [Algorithms & Data Structures Enhancement](artifacts/algorithms/)
+- [Database Enhancement](artifacts/databases/)
 
 ---
 
