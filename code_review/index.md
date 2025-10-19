@@ -75,10 +75,11 @@ These are the enhancements described in the review and completed in the capstone
 
 ---
 ## 📂 Related Links
-- [Software Design & Engineering Enhancement](../artifacts/software_design/)
-- [Algorithms & Data Structures Enhancement](../artifacts/algorithms/)
-- [Database Enhancement](../artifacts/databases/)
-- [Back to Portfolio Home](../index.html)
+- [Software Design & Engineering Enhancement](/OSINT-capstone-portfolio/artifacts/software_design/)
+- [Algorithms & Data Structures Enhancement](/OSINT-capstone-portfolio/artifacts/algorithms/)
+- [Database Enhancement](/OSINT-capstone-portfolio/artifacts/databases/)
+- [Back to Portfolio Home](/OSINT-capstone-portfolio/)
+
 ---
 
 ## ✅ Reviewer Notes (What to Look For)
