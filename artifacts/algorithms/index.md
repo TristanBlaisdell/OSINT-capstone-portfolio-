@@ -1,179 +1,161 @@
-Enhancement #2 — Algorithms & Data Structures
+[← Back to Home](../../index.md)
 
-Artifact: News Clustering & Ranking Pipeline (Shingling → MinHash → LSH → Union-Find → Composite Scoring)
-Files:
+# Enhancement 2 — Algorithms & Data Structures
 
-lib/news_screen.dart (controller + UI)
+**Artifact:** News Clustering & Ranking Pipeline  
+**Focus:** Shingling → MinHash → LSH → Union-Find → Composite Scoring  
+**Key Files:**  
+- `lib/news_screen.dart` (controller + UI)  
+- `lib/data/news_connectors.dart` (RSS/Guardian/NYT connectors)  
+- `lib/data/news_models.dart` (Article model)
 
-lib/data/news_connectors.dart (RSS/Guardian/NYT connectors)
+---
 
-lib/data/news_models.dart (Article model)
+## 🎯 Overview and Purpose
 
-🎯 Goal
+The goal of this enhancement was to transform the app’s naive chronological news feed into an **intelligent, deduplicated, and ranked feed** using applied algorithms and data structures. The enhancement demonstrates the ability to design and evaluate efficient computing solutions that manage trade-offs between accuracy, speed, and scalability.
 
-Transform a naive, chronological news feed into an algorithmically deduplicated & ranked stream by:
+Specifically, this enhancement added:
+- **Clustering** of near-duplicate articles using Locality Sensitive Hashing (LSH) on MinHash signatures of k-shingles.  
+- **Ranking** based on a composite score (recency, credibility, engagement, novelty).  
+- **Entity filtering** using an inverted index structure for topic-based exploration.  
 
-Clustering near-duplicate articles from multiple sources using LSH over MinHash signatures of k-shingles.
+These algorithmic improvements enable meaningful organization of open-source news data while preserving performance and accuracy.
 
-Consolidating each cluster under a representative article chosen by source reliability and recency.
+---
 
-Ranking clusters with a composite score (recency decay, Wilson credibility, source reliability, engagement, novelty).
+## ⚙️ Pre-Enhancement Context
 
-Allowing users to filter by entities (e.g., “NATO”, “Ukraine”, “Elections”) via an inverted index.
+Before enhancement, the feed simply displayed all news items sorted by publish date.  
+There was **no deduplication**, **no similarity detection**, and **no ranking beyond recency**.  
+To document this stage, see the reconstructed notes in [Original State](original_state.md).
 
-This enhancement demonstrates applied data structures, algorithmic tradeoffs, and performance-aware design.
+---
 
-🧭 Pipeline Overview
-1️⃣ Normalization & Shingling
+## 🧩 Algorithmic Pipeline
 
-Normalize text (lowercase, strip punctuation, stopword removal, light stemming) → tokenize.
+### 1️⃣ Text Normalization & Shingling
+Input text is cleaned (lowercased, punctuation removed, stop words filtered) and split into **5-word shingles**.  
+Each shingle is hashed using **FNV-1a (32-bit)** for compact set representation.
 
-Build k-shingles (default k=5 contiguous tokens) and hash each shingle with FNV-1a 32-bit for speed.
+```dart
+Set<int> shinglesFrom(String text, {int k = 5}) { ... } // → Set<int> shingles
 
-Set<int> shinglesFrom(String text, {int k = 5}) { ... }    // → Set<int> shingles
+2️⃣ MinHash Signature Generation
 
-2️⃣ MinHash Signatures
-
-Generate m=64 hash functions (affine family) to produce a MinHash signature per article.
-
+Each article’s shingle set is transformed into a 64-element MinHash signature using an affine hash family.
 final _minHasher = MinHasher(m: 64);
 a.signature = _minHasher.signature(a.shingles);
 
 3️⃣ Locality-Sensitive Hashing (LSH)
 
-Banding scheme: bands=8, rowsPerBand=8 → 8 x 8 = 64 signature length.
-
-Items whose band-slices collide fall into the same candidate buckets.
-
+The 64-element signature is divided into 8 bands of 8 rows each.
+Items that share identical band hashes are treated as potential duplicates.
 _lsh = LSH(bands: 8, rowsPerBand: 8);
 _lsh.add(a.id, a.signature);
 final cand = _lsh.query(a.signature);
 
-4️⃣ Similarity Check & Clustering
+4️⃣ Similarity Validation & Clustering
 
-For each candidate pair, estimate Jaccard from signatures; confirm with true Jaccard on shingles.
-
-Use Union-Find (disjoint set) to merge items above thresholds (e.g., est ≥ 0.75 then true ≥ 0.80).
-
+Candidate pairs are compared by estimated and true Jaccard similarity.
+If both thresholds pass (est ≥ 0.75, true ≥ 0.80), articles are merged using a Union-Find structure.
 if (est >= 0.75 && jaccard(a.shingles, b.shingles) >= 0.80) uf.union(a.id, b.id);
-
 5️⃣ Representative Selection
 
-Pick one article per cluster by combined source reliability + recency.
+Each cluster chooses one “canonical” article based on:
 
+Source reliability weight
+
+Recency decay factor
 // 0.7 * sourceReliability + 0.3 * recencyDecay
 
 6️⃣ Composite Cluster Score
 
-Rank clusters using:
+Clusters are ranked by a composite score that combines:
 
 Recency decay (exponential)
 
-Wilson score on up/down votes
+Wilson credibility (statistical lower bound)
 
-Source reliability prior (per-source weights)
+Source reliability prior
 
-Engagement (clicks + reads, log-scaled)
+Engagement level (clicks + reads)
 
-Novelty (lighter reward for smaller clusters)
-
+Novelty factor (smaller clusters get slight preference)
 score = 0.40*recency + 0.20*wilson + 0.20*source + 0.15*engagement + 0.05*novelty;
 
-7️⃣ Entity Filter (Inverted Index)
+7️⃣ Entity Filtering
 
-Build entity -> {articleIds} index during refresh.
+An inverted index maps entities (like “NATO”, “Ukraine”, “Elections”) to the article IDs where they appear.
+Users can filter by one or more entities to view only clusters that match all selected topics.
 
-Filter clusters to those containing all selected entities (set intersection).
-
-🧪 Key Structures & Algorithms
-
-Shingles: Set<int> of hashed k-grams (space-efficient dedup).
-
-MinHash: List<int> signature (m=64) for Jaccard estimation.
-
-LSH (banding): buckets signatures to find probable near-duplicates in sublinear time.
-
-Union-Find: near-O(α(N)) merges to form clusters.
-
-Inverted Index: Map<String, Set<String>> for entity filters.
-
-Scoring: Exponential decay + Wilson lower bound + priors + log engagement.
-
+🧠 Data Structures Used
+Structure	Purpose
+Set<int>	Stores hashed k-shingles for text similarity
+List<int>	MinHash signature (length 64) for Jaccard estimation
+Map<String, Set<String>>	Entity-to-article inverted index
+UnionFind	Efficient clustering of similar articles
+LSH	Locality Sensitive Hashing for approximate nearest-neighbor lookup
 ⏱️ Complexity & Performance
 Stage	Structure	Typical Cost
 Shingling	Set of hashes	O(T) per article, T = tokens
-MinHash	64 affine hashes	O(64 ·
-LSH add/query	bands=8, rows=8	O(8) per add; O(8 + collisions) per query
-Pair confirm	Jaccard on sets	O(
-Clustering	Union-Find	near O(α(N)) merges
-Ranking	Simple arithmetic	O(#clusters)
+MinHash	64 affine hashes	O(64 ×
+LSH add/query	bands=8, rows=8	O(8) per add/query
+Pair confirm	Jaccard	O(
+Clustering	Union-Find	near O(α(N))
+Ranking	Composite arithmetic	O(#clusters)
 
 Trade-offs:
 
-Increasing m or tightening thresholds raises precision but costs more CPU.
+Increasing m or tightening thresholds raises precision but increases runtime.
 
-Banding (8x8) balances recall/precision for short news text; tweakable.
+Banding (8×8) balances recall vs. precision for short-form news text.
 
-🧷 Parameters & Thresholds (tunable)
+⚙️ Parameters and Thresholds
+Parameter	Value	Description
+k	5	Shingle size
+m	64	MinHash signature length
+bands	8	LSH bands
+rowsPerBand	8	LSH rows per band
+est-Jaccard	≥ 0.75	MinHash similarity threshold
+true-Jaccard	≥ 0.80	Confirmed similarity threshold
 
-k (shingles) = 5
+Composite Weighting:
 
-m (signature length) = 64
+Factor	Weight
+Recency	0.40
+Credibility	0.20
+Source Reliability	0.20
+Engagement	0.15
+Novelty	0.05
 
-bands = 8, rowsPerBand = 8
+Source Reliability Priors:
 
-LSH candidate confirmation: est-Jaccard ≥ 0.75, true Jaccard ≥ 0.80
-
-Composite weights:
-
-Recency .40
-
-Credibility .20
-
-Source .20
-
-Engagement .15
-
-Novelty .05
-
-Source reliability priors (sample):
-
-AP .92
-
-Reuters .93
-
-BBC .90
-
-NYTimes .87
-
-CNN .80
-
-Fox .78
-
-Unknown .60
-
+Source	Reliability
+AP	0.92
+Reuters	0.93
+BBC	0.90
+NYTimes	0.87
+CNN	0.80
+Fox	0.78
+Unknown	0.60
 🧪 Edge Cases & Safeguards
 
-Empty/short texts fall back to a single shingle → still clusterable.
+Empty or short articles default to a single shingle (still clusterable).
 
-Invalid timestamps default to DateTime.now() (safe recency).
+Invalid or missing timestamps default to DateTime.now() for safe scoring.
 
-Entity filter uses set intersection; clearing filters restores full ranked list.
+Entity filters automatically refresh when toggled on/off.
 
-If connectors fail, pipeline degrades gracefully (skips errors).
+Feed gracefully handles failed connectors (skips rather than crashes).
 
-🎓 Course Outcomes Mapping
-
-Algorithmic principles: MinHash/LSH pipeline, set ops, Union-Find, Wilson score.
-
-Design trade-offs: Precision/recall via banding; k-shingles vs. char-grams; performance vs. quality.
-
-Techniques & tools: Multi-source ingestion (RSS/Guardian/NYT), robust parsing, normalized ranking.
-
-Security mindset: Trusted-source priors, neutral defaults (Wilson 0.5), resilience to malformed inputs.
-
-Communication: Clear code structure and comments, parameterized design, UI that explains cluster size/score.
-
+🎓 Course Outcomes Alignment
+Outcome	Application
+Algorithmic Design	Implemented multi-stage clustering using MinHash + LSH + Union-Find
+Data Structures	Efficient sets, maps, and disjoint sets to store and manage relationships
+Performance Evaluation	Tuned parameters for optimal balance of recall and speed
+Security Mindset	Weighted sources by credibility; neutral defaults prevent bias
+Communication	Clear code modularization, consistent comments, structured scoring formula
 📎 Artifacts
 
 Enhanced Code:
@@ -186,12 +168,14 @@ lib/data/news_models.dart
 
 Reconstructed Original Notes: original_state.md
 
-Narrative (PDF): artifact2_narrative.pdf (to be added)
+Narrative Report (PDF): artifact2_narrative.pdf (to be added)
 
 🔗 Navigation
 
-Back to Home / Self-Assessment
+← Back to Home
 
 Software Design & Engineering
 
-Databases
+Databases****
+
+
