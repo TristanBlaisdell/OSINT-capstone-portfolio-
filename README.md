@@ -56,6 +56,25 @@ OSINT-capstone-portfolio/
   - [Algorithms & Data Structures](artifacts/algorithms/)  
   - [Databases**](artifacts/databases/)  
 
+## Database Architecture Screenshots
+
+| Screenshot | Description |
+|-------------|-------------|
+| ![Database Screenshot 356](../../images/Screenshot%20(356).png) | Firestore rules and collections overview |
+| ![Database Screenshot 357](../../images/Screenshot%20(357).png) | Realtime Database node structure |
+| ![Database Screenshot 358](../../images/Screenshot%20(358).png) | Encryption flow during file upload |
+| ![Database Screenshot 359](../../images/Screenshot%20(359).png) | AES-GCM encrypted message object |
+| ![Database Screenshot 360](../../images/Screenshot%20(360).png) | RSA key wrapping for per-user access |
+| ![Database Screenshot 361](../../images/Screenshot%20(361).png) | Firestore moderation audit log |
+
+## Forum Interface Screenshots
+
+| Screenshot | Description |
+|-------------|-------------|
+| ![Forum Screenshot 143](../../images/Screenshot%20(143).png) | Forum thread UI showing nested replies |
+| ![Forum Screenshot 268](../../images/Screenshot%20(268).png) | Moderator controls and comment voting layout |
+
+
 ---
 
 ## 🧑‍💻 Author
