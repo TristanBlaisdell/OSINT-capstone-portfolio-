@@ -56,27 +56,6 @@ OSINT-capstone-portfolio/
   - [Algorithms & Data Structures](artifacts/algorithms/)  
   - [Databases**](artifacts/databases/)  
 
-## Database Architecture Screenshots
-
-| Screenshot | Description |
-|-----------|-------------|
-| ![Database Screenshot 356](/OSINT-capstone-portfolio/images/Screenshot%20%28356%29.png) | Firestore rules and collections overview |
-| ![Database Screenshot 357](/OSINT-capstone-portfolio/images/Screenshot%20%28357%29.png) | Realtime Database node structure |
-| ![Database Screenshot 358](/OSINT-capstone-portfolio/images/Screenshot%20%28358%29.png) | Encryption flow during file upload |
-| ![Database Screenshot 359](/OSINT-capstone-portfolio/images/Screenshot%20%28359%29.png) | AES-GCM encrypted message object |
-| ![Database Screenshot 360](/OSINT-capstone-portfolio/images/Screenshot%20%28360%29.png) | RSA key wrapping for per-user access |
-| ![Database Screenshot 361](/OSINT-capstone-portfolio/images/Screenshot%20%28361%29.png) | Firestore moderation audit log |
-
-
-## Forum Interface Screenshots
-
-| Screenshot | Description |
-|-----------|-------------|
-| ![Forum Screenshot 143](/OSINT-capstone-portfolio/images/Screenshot%20%28143%29.png) | Forum thread UI showing nested replies |
-| ![Forum Screenshot 268](/OSINT-capstone-portfolio/images/Screenshot%20%28268%29.png) | Moderator controls and comment voting layout |
-
----
-
 ## 🧑‍💻 Author
 **Tristan Blaisdell**  
 Bachelor of Science, Computer Science – Southern New Hampshire University  
