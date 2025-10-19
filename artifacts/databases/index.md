@@ -2,14 +2,16 @@
 
 # Enhancement 3 — Databases
 
-**Artifact Focus:** Secure, scalable data layer spanning **Firebase Realtime Database**, **Cloud Firestore**, and **Firebase Storage**, with end‑to‑end encryption (AES‑GCM) and per‑recipient RSA key wrapping.  
+**Artifact Focus:** Secure, scalable data layer spanning **Firebase Realtime Database**, **Cloud Firestore**, and **Firebase Storage**, with end-to-end encryption (AES-GCM) and per-recipient RSA key wrapping.  
+
 **Key Files (already in repo):**
-- [`comments_repository_firestore.dart`](enhanced_code/comments_repository_firestore.dart) *(Firestore repository & moderation log)*
-- [`comment.dart`](enhanced_code/comment.dart) *(comment document model)*
-- [`post_detail_screen.dart`](enhanced_code/post_detail_screen.dart) *(hybrid RTDB+Firestore comment tree, voting, moderation)*
-- [`messaging_screen.dart`](enhanced_code/messaging_screen.dart) *(chat list & navigation, Firestore queries)*
-- [`Chat_screen.dart`](enhanced_code/Chat_screen.dart) *(E2E messaging: hybrid text/media, group-ready key wrap)*
-- [`encrypted_storage_manager.dart`](enhanced_code/encrypted_storage_manager.dart) *(AES-GCM encryption, Storage upload/download, streaming for video)*
+- [comments_repository_firestore.dart](./enhanced_code/comments_repository_firestore.dart) *(Firestore repository & moderation log)*
+- [comment.dart](./enhanced_code/comment.dart) *(comment document model)*
+- [post_detail_screen.dart](./enhanced_code/post_detail_screen.dart) *(hybrid RTDB+Firestore comment tree, voting, moderation)*
+- [messaging_screen.dart](./enhanced_code/messaging_screen.dart) *(chat list & navigation, Firestore queries)*
+- [Chat_screen.dart](./enhanced_code/Chat_screen.dart) *(E2E messaging: hybrid text/media, group-ready key wrap)*
+- [encrypted_storage_manager.dart](./enhanced_code/encrypted_storage_manager.dart) *(AES-GCM encryption, Storage upload/download, streaming for video)*
+
 
 > Full source files should live in this section’s [`enhanced_code/`](enhanced_code/) folder for easy browsing from your ePortfolio.
 
