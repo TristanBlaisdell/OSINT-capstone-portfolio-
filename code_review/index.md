@@ -76,10 +76,10 @@ These are the enhancements described in the review and completed in the capstone
 ---
 
 ## 📂 Related Links
-- [Code Review Video](code_review/)
-- [Software Design & Engineering Enhancement](artifacts/software_design/)
-- [Algorithms & Data Structures Enhancement](artifacts/algorithms/)
-- [Database Enhancement](artifacts/databases/)
+- [Code Review Video Page](/OSINT-capstone-portfolio/code_review.html)
+- [Software Design & Engineering Enhancement](/OSINT-capstone-portfolio/artifacts/software_design/)
+- [Algorithms & Data Structures Enhancement](/OSINT-capstone-portfolio/artifacts/algorithms/)
+- [Database Enhancement](/OSINT-capstone-portfolio/artifacts/databases/)
 
 ---
 
