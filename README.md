@@ -59,21 +59,21 @@ OSINT-capstone-portfolio/
 ## Database Architecture Screenshots
 
 | Screenshot | Description |
-|-------------|-------------|
-| ![Database Screenshot 356](../../images/Screenshot%20(356).png) | Firestore rules and collections overview |
-| ![Database Screenshot 357](../../images/Screenshot%20(357).png) | Realtime Database node structure |
-| ![Database Screenshot 358](../../images/Screenshot%20(358).png) | Encryption flow during file upload |
-| ![Database Screenshot 359](../../images/Screenshot%20(359).png) | AES-GCM encrypted message object |
-| ![Database Screenshot 360](../../images/Screenshot%20(360).png) | RSA key wrapping for per-user access |
-| ![Database Screenshot 361](../../images/Screenshot%20(361).png) | Firestore moderation audit log |
+|-----------|-------------|
+| ![Database Screenshot 356](/OSINT-capstone-portfolio/images/Screenshot%20%28356%29.png) | Firestore rules and collections overview |
+| ![Database Screenshot 357](/OSINT-capstone-portfolio/images/Screenshot%20%28357%29.png) | Realtime Database node structure |
+| ![Database Screenshot 358](/OSINT-capstone-portfolio/images/Screenshot%20%28358%29.png) | Encryption flow during file upload |
+| ![Database Screenshot 359](/OSINT-capstone-portfolio/images/Screenshot%20%28359%29.png) | AES-GCM encrypted message object |
+| ![Database Screenshot 360](/OSINT-capstone-portfolio/images/Screenshot%20%28360%29.png) | RSA key wrapping for per-user access |
+| ![Database Screenshot 361](/OSINT-capstone-portfolio/images/Screenshot%20%28361%29.png) | Firestore moderation audit log |
+
 
 ## Forum Interface Screenshots
 
 | Screenshot | Description |
-|-------------|-------------|
-| ![Forum Screenshot 143](../../images/Screenshot%20(143).png) | Forum thread UI showing nested replies |
-| ![Forum Screenshot 268](../../images/Screenshot%20(268).png) | Moderator controls and comment voting layout |
-
+|-----------|-------------|
+| ![Forum Screenshot 143](/OSINT-capstone-portfolio/images/Screenshot%20%28143%29.png) | Forum thread UI showing nested replies |
+| ![Forum Screenshot 268](/OSINT-capstone-portfolio/images/Screenshot%20%28268%29.png) | Moderator controls and comment voting layout |
 
 ---
 
