@@ -1,1 +1,477 @@
 
+import 'package:flutter/material.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'post_detail_screen.dart'; // Import PostDetailScreen
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'key_setup_screen.dart';
+import 'package:provider/provider.dart';
+import '../security/private_key_provider.dart';
+import '../utils/key_manager.dart';
+import 'key_unlock_screen.dart';
+import '../screens/Chat_screen.dart';
+
+// import 'chat_screen.dart'; // You'll create this next
+
+class MessagingScreen extends StatefulWidget {
+  const MessagingScreen({Key? key}) : super(key: key);
+
+  @override
+  State<MessagingScreen> createState() => _MessagingScreenState();
+}
+
+class _MessagingScreenState extends State<MessagingScreen> {
+  final List<String> _categories = [
+    'Military Conflict',
+    'Geopolitics',
+    'US Politics',
+    'Breaking News',
+    'World Markets',
+  ];
+
+  String _selectedCategory = 'Military Conflict';
+  final DatabaseReference _postsRef = FirebaseDatabase.instance.ref('forum_posts');
+  List<Map<String, dynamic>> _posts = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPosts();// Load posts when the widget is first created
+    // ✅ Delay this until the widget is fully mounted
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _maybePromptUnlock();
+    });
+  }
+
+  // Method to load posts based on the selected category
+  void _loadPosts() {
+    _postsRef.child(_selectedCategory).onValue.listen((event) {
+      final snapshot = event.snapshot;
+      if (snapshot.exists) {
+        final data = Map<String, dynamic>.from(snapshot.value as Map);
+        setState(() {
+          _posts = data.entries.map((entry) {
+            final post = Map<String, dynamic>.from(entry.value);
+            post['post_id'] = entry.key; // Correct post ID
+            post['category'] = _selectedCategory; // Pass category too
+            return post;
+          }).toList();
+        });
+      } else {
+        setState(() {
+          _posts = [];
+        });
+      }
+    });
+  }
+
+  void _maybePromptUnlock() async {
+    final hasEncryptedKey = await KeyManager.hasEncryptedPrivateKey();
+
+    // Don't prompt if key is already unlocked
+    final privateKey = Provider.of<PrivateKeyProvider>(context, listen: false).privateKey;
+
+    if (hasEncryptedKey && privateKey == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const KeyUnlockScreen()),
+        );
+      });
+    }
+  }
+
+
+
+  // Function to create a new post
+  void _createPost() {
+    TextEditingController _controller = TextEditingController();
+    TextEditingController _descriptionController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Create New Post'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min, // To avoid overflow
+            children: [
+              TextField(
+                controller: _controller,
+                decoration: const InputDecoration(hintText: 'Post title'),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _descriptionController,
+                decoration: const InputDecoration(hintText: 'Post description'),
+                maxLines: null,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                if (_controller.text.isNotEmpty) {
+                  try {
+                    // Get current Firebase user
+                    final currentUser = FirebaseAuth.instance.currentUser;
+
+                    if (currentUser == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('You must be logged in')),
+                      );
+                      return;
+                    }
+
+                    // Fetch username from Firestore
+                    final userDoc = await FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(currentUser.uid)
+                        .get();
+                    final username = userDoc.data()?['username'] ?? 'Unknown';
+
+                    // Create post data
+                    final postData = {
+                      'title': _controller.text,
+                      'description': _descriptionController.text,
+                      'timestamp': DateTime.now().toIso8601String(),
+                      'uid': currentUser.uid,
+                      'username': username,
+                      'comments': {},
+                      'upvotes': 0,
+                      'downvotes': 0,
+                    };
+
+                    // Push post to Firebase
+                    await _postsRef.child(_selectedCategory).push().set(postData);
+
+                    print('Post created successfully');
+                    _loadPosts(); // Refresh the post list
+                    Navigator.pop(context); // Close the dialog
+                  } catch (e) {
+                    print('Error creating post: $e');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error: $e')),
+                    );
+                  }
+                }
+              },
+              child: const Text('Post'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+  // Navigate to the PostDetailScreen when a post is clicked
+  void _viewPostDetails(Map<String, dynamic> post) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PostDetailScreen(
+          post: post, // Pass the post data to PostDetailScreen
+        ),
+      ),
+    );
+  }
+
+  // Method to display the list of posts
+  Widget _buildPostList() {
+    print("Posts to display: $_posts");
+
+    return ListView.builder(
+      itemCount: _posts.length,
+      itemBuilder: (context, index) {
+        final post = _posts[index];
+        return ListTile(
+          title: Text(post['title']),
+          subtitle: Text('Posted by @${post['username'] ?? 'Unkown'}'),
+          onTap: () => _viewPostDetails(post), // Navigate to the PostDetailScreen
+        );
+      },
+    );
+  }
+
+  // Method to display category selector
+  Widget _buildCategorySelector() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: _categories.map((category) {
+          return ElevatedButton(
+            onPressed: () {
+              setState(() {
+                _selectedCategory = category; // Update the selected category
+                _loadPosts(); // Reload posts when category is selected
+              });
+            },
+            child: Text(category),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 2, // Number of tabs (Public Forum and Private Messaging)
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Messaging'),
+          bottom: const TabBar(
+            tabs: [
+              Tab(text: 'Public Forum'),
+              Tab(text: 'Private Messages'),  // Tab for private messages
+            ],
+          ),
+        ),
+        body: TabBarView(
+          children: [
+            Column(
+              children: [
+                _buildCategorySelector(),  // Category selector
+                const SizedBox(height: 12),
+                ElevatedButton(
+                  onPressed: _createPost,  // Button to create a new post
+                  child: const Text('Create New Post'),
+                ),
+                const SizedBox(height: 12),
+
+                // 🔐 Add this button below:
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const KeySetupScreen(),
+                      ),
+                    );
+                  },
+                  child: const Text('🔐 Test Key Setup'),
+                ),
+                const SizedBox(height: 12),
+                ElevatedButton(
+                  onPressed: () async {
+                    await KeyManager.resetKeys();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Encryption keys reset. Please restart the app.')),
+                    );
+                  },
+                  child: const Text('🧹 Reset Encryption Keys'),
+                ),
+
+
+                const SizedBox(height: 12),
+                Expanded(child: _buildPostList()), // Display posts in a list
+              ],
+            ), // Public Forum Tab
+            PrivateMessages(), // Private Messages Tab (optional, defined below)
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class PrivateMessages extends StatefulWidget {
+  const PrivateMessages({Key? key}) : super(key: key);
+
+  @override
+  State<PrivateMessages> createState() => _PrivateMessagesState();
+}
+
+class _PrivateMessagesState extends State<PrivateMessages> {
+  @override
+  Widget build(BuildContext context) {
+    final currentUser = FirebaseAuth.instance.currentUser;
+
+    if (currentUser == null) {
+      return const Center(child: Text("You must be logged in to view messages."));
+    }
+
+    return Scaffold(
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('chats')
+            .where('members', arrayContains: currentUser.uid)
+            .orderBy('lastMessage.timestamp', descending: true)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text("No conversations yet."));
+          }
+
+          final chats = snapshot.data!.docs;
+
+          return ListView.builder(
+            itemCount: chats.length,
+            itemBuilder: (context, index) {
+              final chat = chats[index];
+              final isGroup = chat['type'] == 'group';
+              final groupName = isGroup ? (chat['groupName'] ?? 'Group Chat') : null;
+              final members = List<String>.from(chat['members'] ?? []);
+              final lastMessage = chat['lastMessage'] ?? {};
+              final otherUserId = _otherUser(members, currentUser.uid);
+
+              // Fetch username only if not a group chat
+              if (!isGroup) {
+                return FutureBuilder<DocumentSnapshot>(
+                  future: FirebaseFirestore.instance.collection('users').doc(otherUserId).get(),
+                  builder: (context, userSnapshot) {
+                    if (userSnapshot.connectionState == ConnectionState.waiting) {
+                      return const ListTile(
+                        title: Text("Loading..."),
+                        subtitle: Text("Please wait"),
+                      );
+                    }
+
+                    String displayName = otherUserId;
+                    if (userSnapshot.hasData && userSnapshot.data!.exists) {
+                      displayName = userSnapshot.data!.get('username') ?? otherUserId;
+                    }
+
+                    return ListTile(
+                      title: Text("Chat with $displayName"),
+                      subtitle: Text(
+                        lastMessage['encryptedContent'] != null
+                            ? '[Encrypted message]'
+                            : 'No messages yet',
+                      ),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => Chat_screen(chatId: chat.id),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                );
+              }
+
+              // Group chat fallback
+              return ListTile(
+                title: Text(groupName!),
+                subtitle: Text(
+                  lastMessage['encryptedContent'] != null
+                      ? '[Encrypted message]'
+                      : 'No messages yet',
+                ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => Chat_screen(chatId: chat.id),
+                    ),
+                  );
+                },
+              );
+            },
+          );
+
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showUserSearchDialog(currentUser.uid),
+        child: const Icon(Icons.message),
+        tooltip: "Start a new chat",
+      ),
+    );
+  }
+
+  String _otherUser(List<String> members, String currentUserId) {
+    return members.firstWhere((uid) => uid != currentUserId, orElse: () => 'Unknown');
+  }
+
+  void _showUserSearchDialog(String currentUserId) {
+    final TextEditingController _searchController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Start Private Chat"),
+        content: TextField(
+          controller: _searchController,
+          decoration: const InputDecoration(hintText: "Enter username"),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              final username = _searchController.text.trim();
+
+              // Find user
+              final query = await FirebaseFirestore.instance
+                  .collection('users')
+                  .where('username', isEqualTo: username)
+                  .get();
+
+              if (query.docs.isEmpty) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("User not found.")),
+                );
+                return;
+              }
+
+              final otherUser = query.docs.first;
+              final otherUid = otherUser.id;
+
+              if (otherUid == currentUserId) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("You can't chat with yourself.")),
+                );
+                return;
+              }
+
+              // Check if chat exists
+              final existingChats = await FirebaseFirestore.instance
+                  .collection('chats')
+                  .where('type', isEqualTo: 'private')
+                  .where('members', arrayContains: currentUserId)
+                  .get();
+
+              String? chatId;
+
+              for (var chat in existingChats.docs) {
+                final members = List<String>.from(chat['members']);
+                if (members.contains(otherUid) && members.length == 2) {
+                  chatId = chat.id;
+                  break;
+                }
+              }
+
+              // If no chat exists, create one
+              chatId ??= (await FirebaseFirestore.instance.collection('chats').add({
+                'type': 'private',
+                'members': [currentUserId, otherUid],
+                'createdAt': FieldValue.serverTimestamp(),
+                'lastMessage': {
+                  'timestamp': FieldValue.serverTimestamp(),
+                },
+              })).id;
+
+              Navigator.pop(context); // Close dialog
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => Chat_screen(chatId: chatId!)),
+              );
+            },
+            child: const Text("Start Chat"),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
