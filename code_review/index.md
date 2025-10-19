@@ -74,13 +74,6 @@ These are the enhancements described in the review and completed in the capstone
 - **Security Mindset:** RBAC, validation, encryption principles, least-privilege rules, and misuse case considerations.
 
 ---
-## 🧭 Navigation
-- [**Home / Self-Assessment**](/OSINT-capstone-portfolio/index.html)  
-- [**Code Review Video**](/OSINT-capstone-portfolio/code_review/)  
-- [**Artifacts**](/OSINT-capstone-portfolio/artifacts/)  
-  - [Software Design & Engineering](/OSINT-capstone-portfolio/artifacts/software_design/)  
-  - [Algorithms & Data Structures](/OSINT-capstone-portfolio/artifacts/algorithms/)  
-  - [Databases**](/OSINT-capstone-portfolio/artifacts/databases/)  
 
 
 ---
