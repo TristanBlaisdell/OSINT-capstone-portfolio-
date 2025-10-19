@@ -28,11 +28,11 @@ See **[Original State Notes](original_state.md)**.
 ## ✅ Enhanced Implementation (Current)
 This version implements a consistent design that’s easier to extend and reason about.
 
-### Representative files (enhanced)
-- `post_detail_screen.dart` — thread screen UI + unified pagination/sorting, optimistic votes  
-- `messaging_screen.dart` — forum index + category selector + navigation to post detail  
-- `models/comment.dart` — comment data model (Firestore mirror)  
-- `data/comments_repository_firestore.dart` — repository for Firestore upserts, votes, audits
+### Representative Files (Enhanced)
+- [`post_detail_screen.dart`](enhanced_code/post_detail_screen.dart) — Thread screen UI + unified pagination/sorting, optimistic votes  
+- [`messaging_screen.dart`](enhanced_code/messaging_screen.dart) — Forum index + category selector + navigation to post detail  
+- [`comment.dart`](enhanced_code/comment.dart) — Comment data model (Firestore mirror)  
+- [`comments_repository_firestore.dart`](enhanced_code/comments_repository_firestore.dart) — Repository for Firestore upserts, votes, audits
 
 > In this design, **Realtime Database (RTDB)** remains the source of truth for live forum UX, while **Firestore** mirrors key data for analytics/audits/moderation reports.
 
