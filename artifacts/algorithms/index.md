@@ -5,9 +5,9 @@
 **Artifact:** News Clustering & Ranking Pipeline  
 **Focus:** Shingling → MinHash → LSH → Union-Find → Composite Scoring  
 **Key Files:**  
-- `lib/news_screen.dart` (controller + UI)  
-- `lib/data/news_connectors.dart` (RSS/Guardian/NYT connectors)  
-- `lib/data/news_models.dart` (Article model)
+- `news_screen.dart` (controller + UI)  
+- `news_connectors.dart` (RSS/Guardian/NYT connectors)  
+- `news_models.dart` (Article model)
 
 ---
 
